@@ -1,6 +1,7 @@
 # Load packages
 library(dplyr)
 library(RSQLite)
+library(tidyr)
 
 #Problem 1
 # Loads data, adds column headers, and removes historical data from data set
@@ -29,7 +30,24 @@ mammal_weights <- function(df){
 }
 
 
+
+
+# Problem 3
+
+# Function to calculate the average mass of extant and extinct mammals on each continent
+
+Mammal_Weight_Continent <- function(df){
+  df%>%
+      group_by(continent, status)%>%
+      summarize(average_weight = mean(combined_mass, na.rm="TRUE"))%>%
+      spread(status, average_weight)
+}
+
+
+
+
+
 MammalData <- Mammal_data()
 mammal_weights(extinct_mammals)
 mammal_weights(extant_mammals)
-
+Mammal_Weight_Continent(MammalData)
