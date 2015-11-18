@@ -2,6 +2,7 @@
 library(dplyr)
 library(RSQLite)
 library(tidyr)
+library(ggplot2)
 
 #Problem 1
 # Loads data, adds column headers, and removes historical data from data set
@@ -14,13 +15,14 @@ Mammal_data <- function(df){
                       "reference")
   # Remove historical data from data set
   data_not_historical <- subset(data, status != "historical")
-  return(data_not_historical)
+  relevant_data <- subset(data_not_historical, status != "introduction")
+  return(relevant_data)
 }
 
 
 #Problem 2
 
-# Filtered out extinct vs. extant mammals
+# Separated extinct vs. extant mammals
 extinct_mammals <- filter(MammalData, status == "extinct")
 extant_mammals <- filter(MammalData, status == "extant")
 
@@ -28,8 +30,6 @@ extant_mammals <- filter(MammalData, status == "extant")
 mammal_weights <- function(df){
     summarize(df,average_weight = mean(combined_mass, na.rm = "TRUE"))
 }
-
-
 
 
 # Problem 3
@@ -40,14 +40,28 @@ Mammal_Weight_Continent <- function(df){
   df%>%
       group_by(continent, status)%>%
       summarize(average_weight = mean(combined_mass, na.rm="TRUE"))%>%
-      spread(status, average_weight)
+      spread(status, average_weight)%>%
+      write.csv("continent_mass_differences.csv")
 }
+continent_mammals <- group_by(MammalData, continent)
+continent_mammals
 
 
+# Problem 4
 
+Mammal_to_plot <- MammalData %>%
+  filter(continent != "EU") %>%
+  filter(continent != "Af") %>%
+  filter(continent != "Oceanic")
 
-
+ggplot(Mammal_to_plot, aes(x = log_mass))+
+  geom_histogram(binwidth = 0.25)+
+  facet_grid(continent~status)
+  
+# Call results from problems 1-3
 MammalData <- Mammal_data()
 mammal_weights(extinct_mammals)
 mammal_weights(extant_mammals)
-Mammal_Weight_Continent(MammalData)
+
+#github repository url final
+# https://github.com/JNHightower/size-biased-extinction.git
