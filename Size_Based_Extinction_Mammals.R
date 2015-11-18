@@ -15,13 +15,15 @@ Mammal_data <- function(df){
                       "reference")
   # Remove historical data from data set
   data_not_historical <- subset(data, status != "historical")
-  return(data_not_historical)
+  relevant_data <- subset(data_not_historical, status != "introduction")
+  return(relevant_data)
 }
 
+MammalData <- Mammal_data()
 
 #Problem 2
 
-# Filtered out extinct vs. extant mammals
+# Separated extinct vs. extant mammals
 extinct_mammals <- filter(MammalData, status == "extinct")
 extant_mammals <- filter(MammalData, status == "extant")
 
@@ -30,13 +32,12 @@ mammal_weights <- function(df){
     summarize(df,average_weight = mean(combined_mass, na.rm = "TRUE"))
 }
 
-
-
+mammal_weights(extinct_mammals)
+mammal_weights(extant_mammals)
 
 # Problem 3
 
 # Function to calculate the average mass of extant and extinct mammals on each continent
-# and write to csv
 
 Mammal_Weight_Continent <- function(df){
   df%>%
@@ -45,16 +46,24 @@ Mammal_Weight_Continent <- function(df){
       spread(status, average_weight)%>%
       write.csv("continent_mass_differences.csv")
 }
-
+continent_mammals <- group_by(MammalData, continent)
+continent_mammals
 
 
 # Problem 4
 
-ggplot(MammalData, aes(x=log_mass, y=species)) +
-  geom_histogram(stat= identity) +
-  facet_wrap(~continent)
+Mammal_to_plot <- MammalData %>%
+  filter(continent != "EU") %>%
+  filter(continent != "Af") %>%
+  filter(continent != "Oceanic")
 
-MammalData <- Mammal_data()
-mammal_weights(extinct_mammals)
-mammal_weights(extant_mammals)
-Continental_mammal_mass <- Mammal_Weight_Continent(MammalData)
+ggplot(Mammal_to_plot, aes(x = log_mass))+
+  geom_histogram(binwidth = 0.25)+
+  facet_grid(continent~status)+
+  ylab("No. Species")+
+  xlab("log(mass)")
+  
+
+
+#github repository url final
+# https://github.com/JNHightower/size-biased-extinction.git
